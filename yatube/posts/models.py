@@ -1,4 +1,3 @@
-from cgitb import text
 from django.db import models
 
 from django.contrib.auth import get_user_model
@@ -32,5 +31,6 @@ class Post(models.Model):
         return self.text
 
     class Meta:
-        ordering = ['-pub_date'] 
+        ordering = ['-pub_date']
+
 

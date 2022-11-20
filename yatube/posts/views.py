@@ -1,13 +1,8 @@
-
-from django.http import Http404
-
 from django.shortcuts import render, get_object_or_404, redirect
 
 from django.core.paginator import Paginator
 
 from .models import Post, Group, User
-
-from django.views.generic import UpdateView
 
 from .forms import CreateForm
 
@@ -26,14 +21,15 @@ def authorized_only(func):
 
 
 def index(request):
-    posts= Post.objects.all()
-    paginator = Paginator(posts, POSTS_PER_PAGE) 
+    posts = Post.objects.all()
+    paginator = Paginator(posts, POSTS_PER_PAGE)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     context = {
         'page_obj': page_obj,
     }
-    return render(request, 'posts/index.html', context) 
+    return render(request, 'posts/index.html', context)
+
 
 def group_posts(request, slug):
     group = get_object_or_404(Group, slug=slug)
@@ -90,6 +86,7 @@ def post_create(request):
         'form': form,
     }
     return render(request, 'posts/create.html', context=context)
+
 
 def post_edit(request, post_id):
     post = get_object_or_404(Post, pk=post_id)

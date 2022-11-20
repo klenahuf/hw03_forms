@@ -50,4 +50,4 @@ urlpatterns = [
         views.MyPasswordResetEmailDoneView.as_view(),
         name='password_done'
     ),
-] 
+]
