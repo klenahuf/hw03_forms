@@ -7,9 +7,9 @@ from .forms import CreationForm
 from django.views.generic import CreateView
 
 from django.contrib.auth.views import PasswordChangeView, PasswordResetDoneView
-from django.contrib.auth.views import PasswordResetView, PasswordResetConfirmView
+from django.contrib.auth.views import PasswordResetView
 from django.contrib.auth.views import PasswordResetCompleteView
-
+from django.contrib.auth.views import PasswordResetConfirmView
 
 class SignUp(CreateView):
     form_class = CreationForm

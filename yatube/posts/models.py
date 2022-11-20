@@ -34,3 +34,4 @@ class Post(models.Model):
         ordering = ['-pub_date']
 
 
+
