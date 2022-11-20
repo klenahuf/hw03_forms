@@ -94,7 +94,7 @@ def post_edit(request, post_id):
     if request.method == 'POST':
         if form.is_valid:
             form.save()
-            return redirect(f'/posts/{post_id}/')
+            return redirect(f'/posts/{post_id}edit/')
     context = {
         'form': form,
         'is_edit': True,
