@@ -7,8 +7,3 @@ class CreateForm(ModelForm):
     class Meta:
         model = Post
         fields = ['text', 'group']
-
-    def __init__(self, *args, **kwargs):
-        super(CreateForm, self).__init__(*args, **kwargs)
-        self.fields['group'].empty_label = None
-        self.fields['group'].widget.choices = self.fields['group'].choices
