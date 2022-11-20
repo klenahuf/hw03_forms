@@ -12,6 +12,3 @@ class CreateForm(ModelForm):
         super(CreateForm, self).__init__(*args, **kwargs)
         self.fields['group'].empty_label = None
         self.fields['group'].widget.choices = self.fields['group'].choices
-
-
-
