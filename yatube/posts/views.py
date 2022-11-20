@@ -4,7 +4,7 @@ from django.core.paginator import Paginator
 
 from .models import Post, Group, User
 
-from .forms import CreateForm
+from .forms import PostForm
 
 
 POSTS_PER_PAGE = 10
@@ -74,14 +74,14 @@ def post_detail(request, post_id):
 @authorized_only
 def post_create(request):
     if request.method == 'POST':
-        form = CreateForm(request.POST)
+        form = PostForm(request.POST)
         if form.is_valid():
             instance = form.save(commit=False)
             instance.author = request.user
             instance.save()
             return redirect('posts:index')
     else:
-        form = CreateForm()
+        form = PostForm()
     context = {
         'form': form,
     }
@@ -90,7 +90,7 @@ def post_create(request):
 
 def post_edit(request, post_id):
     post = get_object_or_404(Post, pk=post_id)
-    form = CreateForm(request.POST or None, instance=post)
+    form = PostForm(request.POST or None, instance=post)
     if request.method == 'POST':
         if form.is_valid:
             form.save()
