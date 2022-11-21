@@ -1,5 +1,4 @@
 from django.db import models
-
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -22,9 +21,9 @@ class Post(models.Model):
         on_delete=models.CASCADE,
     )
     group = models.ForeignKey(Group,
+                              on_delete=models.SET_NULL,
                               blank=True,
                               null=True,
-                              on_delete=models.SET_NULL,
                               related_name='posts')
 
     def __str__(self):

@@ -1,37 +1,27 @@
-{%extends 'base.html'%}
-{% load static %}
-{% block title %}
-Пост {{post.text|truncatechars:30}}
-{% endblock %}
-  </head>
-  <body>
-    <header>
-        {% include 'includes/header.html' %}    
-    </header>
-    <main>
-        {% block content %}
+{% extends 'base.html' %}
+{% block content %} 
       <div class="row">
         <aside class="col-12 col-md-3">
           <ul class="list-group list-group-flush">
             <li class="list-group-item">
               Дата публикации: {{ post.pub_date|date:"d E Y" }}
             </li>
-            {% if post.group %}
+            {% if post.group %}  
             <li class="list-group-item">
-              Группа: {{ group.title }}
+              Группа: {{post.group}}
               <a href="{% url 'posts:group_list' post.group.slug %}">
                 все записи группы
+              {% endif %}  
               </a>
             </li>
-            {% endif %}
             <li class="list-group-item">
-              Автор: {{ post.author.get_full_name }}
+              Автор: {{ post.author }}
             </li>
             <li class="list-group-item d-flex justify-content-between align-items-center">
-              Всего постов автора:  <span >{{ count_posts }}</span>
+              Всего постов автора:  <span >{{count_posts}}</span>
             </li>
             <li class="list-group-item">
-              <a href="{% url 'posts:profile' post.author.username %}">
+              <a href="{% url 'posts:profile' post.author %}">
                 все посты пользователя
               </a>
             </li>
@@ -39,14 +29,13 @@
         </aside>
         <article class="col-12 col-md-9">
           <p>
-            {{ post.text }}
+           {{post.text}}
           </p>
+            {% if request.user == post.author %}
+            <a class="btn btn-primary" href="{% url 'posts:post_edit' post_id=post.pk %}">
+            редактировать запись
+            {% endif %}
+            </a>
         </article>
       </div> 
-      {% endblock %}
-    </main>
-    <footer class="border-top text-center py-3">
-      {% include 'includes/footer.html' %}
-    </footer>
-  </body>
-</html>
+{% endblock %}

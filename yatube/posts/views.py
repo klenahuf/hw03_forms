@@ -1,58 +1,43 @@
 from django.shortcuts import render, get_object_or_404, redirect
-
-from django.core.paginator import Paginator
-
+from django.contrib.auth.decorators import login_required
 from .models import Post, Group, User
-
 from .forms import PostForm
-
-
-POSTS_PER_PAGE = 10
-
-SYMBOLS_QUANTITY = 30
-
-
-def authorized_only(func):
-    def check_user(request, *args, **kwargs):
-        if request.user.is_authenticated:
-            return func(request, *args, **kwargs)
-        return redirect('/auth/login/')
-    return check_user
+from .utils import get_paginator_helper
+SYMBOLS_QUANTITY: int = 30
 
 
 def index(request):
-    posts = Post.objects.all()
-    paginator = Paginator(posts, POSTS_PER_PAGE)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+    paginator_obj = get_paginator_helper(request)
     context = {
-        'page_obj': page_obj,
+        'title': 'Последние обновления на сайте',
+        'page_obj': paginator_obj['page_obj']
     }
     return render(request, 'posts/index.html', context)
 
 
 def group_posts(request, slug):
     group = get_object_or_404(Group, slug=slug)
-    posts = group.posts.all()
-    paginator = Paginator(posts, POSTS_PER_PAGE)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+    paginator_obj = get_paginator_helper(request, filter_name='group',
+                                         filter_value=group)
+    title = group.title
+    text = group.description
     context = {
-        'group': group,
-        'page_obj': page_obj,
+        'text': text,
+        'title': title,
+        'page_obj': paginator_obj['page_obj'],
     }
     return render(request, 'posts/group_list.html', context)
 
 
 def profile(request, username):
     author = get_object_or_404(User, username=username)
-    posts = Post.objects.filter(author=author)
-    paginator = Paginator(posts, POSTS_PER_PAGE)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+    paginator_obj = get_paginator_helper(request, filter_name='author',
+                                         filter_value=author)
     context = {
+        'title': f'Профайл пользователя {author.get_full_name()}',
         'author': author,
-        'page_obj': page_obj
+        'page_obj': paginator_obj['page_obj'],
+        'post_total': paginator_obj['count_post']
     }
     return render(request, 'posts/profile.html', context)
 
@@ -71,33 +56,33 @@ def post_detail(request, post_id):
     return render(request, 'posts/post_detail.html', context)
 
 
-@authorized_only
-def post_create(request):
-    if request.method == 'POST':
-        form = PostForm(request.POST)
-        if form.is_valid():
-            instance = form.save(commit=False)
-            instance.author = request.user
-            instance.save()
-            return redirect('posts:index')
-    else:
-        form = PostForm()
-    context = {
-        'form': form,
-    }
-    return render(request, 'posts/create.html', context=context)
+@login_required
+def new_post(request):
+    form = PostForm(request.POST or None)
+    if not form.is_valid():
+        return render(request, 'posts/create_post.html', {'form': form})
+    post = form.save(commit=False)
+    post.author = request.user
+    post.save()
+    return redirect("posts:profile", request.user)
 
 
+@login_required
 def post_edit(request, post_id):
+    post_edit_flag = True
     post = get_object_or_404(Post, pk=post_id)
-    form = PostForm(request.POST or None, instance=post)
+    if request.method == 'GET':
+        if request.user != post.author:
+            return redirect('posts:profile', request.user)
+        form = PostForm(instance=post)
+
     if request.method == 'POST':
-        if form.is_valid:
+        form = PostForm(request.POST, instance=post)
+        if form.is_valid():
             form.save()
-            return redirect(f'/posts/{post_id}edit/')
-    context = {
-        'form': form,
-        'is_edit': True,
-    }
-    template = 'posts/create_post.html'
-    return render(request, template, context)
+        return redirect('posts:post_detail', post.id)
+
+    return render(request, 'posts/create_post.html', {'form': form,
+                                                      'post': post,
+                                                      'post_edit_flag': post_edit_flag
+                                                      })
