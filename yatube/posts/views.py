@@ -84,5 +84,6 @@ def post_edit(request, post_id):
 
     return render(request, 'posts/create_post.html', {'form': form,
                                                       'post': post,
-                                                      'post_edit_flag': post_edit_flag
+                                                      'post_edit_flag': 
+                                                       post_edit_flag
                                                       })
