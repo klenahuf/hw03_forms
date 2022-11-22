@@ -1,90 +1,81 @@
-from django.shortcuts import render, get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth.decorators import login_required
-from .models import Post, Group, User
+
 from .forms import PostForm
+from .models import Group, Post, User
 from .utils import get_paginator_helper
-SYMBOLS_QUANTITY: int = 30
+
+
+POST_PER_PAGE = 10
 
 
 def index(request):
-    paginator_obj = get_paginator_helper(request)
+    post_list = Post.objects.all()
+    page_obj = get_paginator_helper(request, post_list)
     context = {
-        'title': 'Последние обновления на сайте',
-        'page_obj': paginator_obj['page_obj']
+        'page_obj': page_obj,
     }
     return render(request, 'posts/index.html', context)
 
 
 def group_posts(request, slug):
     group = get_object_or_404(Group, slug=slug)
-    paginator_obj = get_paginator_helper(request, filter_name='group',
-                                         filter_value=group)
-    title = group.title
-    text = group.description
+    post_list = group.posts.all()
+    page_obj = get_paginator_helper(request, post_list)
     context = {
-        'text': text,
-        'title': title,
-        'page_obj': paginator_obj['page_obj'],
+        'group': group,
+        'page_obj': page_obj,
     }
     return render(request, 'posts/group_list.html', context)
 
 
 def profile(request, username):
     author = get_object_or_404(User, username=username)
-    paginator_obj = get_paginator_helper(request, filter_name='author',
-                                         filter_value=author)
+    post_list = author.posts.all()
+    page_obj = get_paginator_helper(request, post_list)
     context = {
-        'title': f'Профайл пользователя {author.get_full_name()}',
+        'page_obj': page_obj,
         'author': author,
-        'page_obj': paginator_obj['page_obj'],
-        'post_total': paginator_obj['count_post']
     }
     return render(request, 'posts/profile.html', context)
 
 
 def post_detail(request, post_id):
     post = get_object_or_404(Post, pk=post_id)
-    author = post.author
-    post_list = Post.objects.filter(author=author)
-    count_posts = post_list.count()
-    title = f"Пост {post.text[:SYMBOLS_QUANTITY]}"
     context = {
-        "title": title,
-        "post": post,
-        "count_posts": count_posts,
+        'post': post,
+        'author': post.author,
     }
     return render(request, 'posts/post_detail.html', context)
 
 
 @login_required
-def new_post(request):
+def post_create(request):
     form = PostForm(request.POST or None)
-    if not form.is_valid():
-        return render(request, 'posts/create_post.html', {'form': form})
-    post = form.save(commit=False)
-    post.author = request.user
-    post.save()
-    return redirect("posts:profile", request.user)
+    if form.is_valid():
+        post = form.save(commit=False)
+        post.author = request.user
+        post.save()
+        return redirect('posts:profile', username=post.author.username)
+
+    return render(request, 'posts/create_post.html', {'form': form})
 
 
 @login_required
 def post_edit(request, post_id):
-    post_edit_flag = True
     post = get_object_or_404(Post, pk=post_id)
-    if request.method == 'GET':
-        if request.user != post.author:
-            return redirect('posts:profile', request.user)
-        form = PostForm(instance=post)
+    if post.author != request.user:
+        return redirect('posts:post_detail', post_id)
 
-    if request.method == 'POST':
-        form = PostForm(request.POST, instance=post)
-        if form.is_valid():
-            form.save()
-        return redirect('posts:post_detail', post.id)
+    form = PostForm(request.POST or None, instance=post)
+    if form.is_valid():
+        post = form.save(commit=False)
+        post.author = request.user
+        post.save()
+        return redirect('posts:post_detail', post_id)
 
     context = {
         'form': form,
-        'post': post,
-        'post_edit_flag': post_edit_flag
+        'is_edit': True,
     }
     return render(request, 'posts/create_post.html', context)
