@@ -3,6 +3,8 @@ from django.db import models
 
 User = get_user_model()
 
+TEXT_LIMIT = 15
+
 
 class Group(models.Model):
     title = models.CharField(max_length=200)
@@ -30,7 +32,6 @@ class Post(models.Model):
     )
 
     def __str__(self):
-        TEXT_LIMIT = 15
         return self.text[:TEXT_LIMIT]
 
     class Meta:

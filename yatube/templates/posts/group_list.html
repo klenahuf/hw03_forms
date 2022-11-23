@@ -15,8 +15,8 @@
                 Дата публикации: {{ post.pub_date|date:"d E Y" }}
             </li>
         </ul>
-        <p>{{ post.text }}</p>
-        <a href="{% url 'posts:post_detail' post.pk %}">подробная информация</a>
+        <p>{{ post.text|linebreaksbr }}</p>
+        <a href="{% url 'posts:post_detail' post.pk %}">Подробная информация</a>
         {% if post.group %}
         <a href="{% url 'posts:index' %}">Главная страница</a>
         {% endif %}

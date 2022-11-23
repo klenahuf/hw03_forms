@@ -6,9 +6,6 @@ from .models import Group, Post, User
 from .utils import get_paginator_helper
 
 
-POST_PER_PAGE = 10
-
-
 def index(request):
     post_list = Post.objects.all()
     page_obj = get_paginator_helper(request, post_list)
@@ -69,9 +66,7 @@ def post_edit(request, post_id):
 
     form = PostForm(request.POST or None, instance=post)
     if form.is_valid():
-        post = form.save(commit=False)
-        post.author = request.user
-        post.save()
+        post = form.save()
         return redirect('posts:post_detail', post_id)
 
     context = {
