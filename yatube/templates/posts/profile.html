@@ -4,7 +4,7 @@
         <h1>Все посты пользователя {{author}} </h1>
         <h3>Всего постов: {{count_posts}} </h3>   
            {% for post in page_obj %}
-           {% include 'includes/forms/post_card.html' with show_group=True profile=True %}
+           {% include 'posts/includes/post_card.html' with show_group_link=True %} 
            {% endfor %}
           {% include 'posts/includes/paginator.html' %}
       </div>
